@@ -1,0 +1,29 @@
+meta {
+  name: Post-test
+  type: http
+  seq: 2
+}
+
+post {
+  url: localhost/online-shop-295
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "sku": "SP1002",
+    "active": "1",
+    "id_category": "1",
+    "name": "sports shoe",
+    "image": "",
+    "description": "sports shoe for men",
+    "price": "108.90",
+    "stock": "5"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,16 +1,15 @@
 meta {
-  name: Get-test
+  name: Patch-test
   type: http
-  seq: 1
+  seq: 6
 }
 
-get {
-  url: localhost/product/1
+patch {
+  url: localhost/
   body: none
   auth: inherit
 }
 
 settings {
   encodeUrl: true
-  timeout: 0
 }

@@ -1,0 +1,29 @@
+meta {
+  name: Put-test
+  type: http
+  seq: 4
+}
+
+put {
+  url: localhost/product/1
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "sku": "SP1003",
+    "active": "1",
+    "id_category": "1",
+    "name": "running sports shoe",
+    "image": "",
+    "description": "running sports shoe for men",
+    "price": "99.90",
+    "stock": "8"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

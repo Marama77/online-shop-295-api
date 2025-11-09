@@ -20,30 +20,30 @@ $app->addRoutingMiddleware();
 $app->addErrorMiddleware(true, true, true);
 
 /**
- * @OA\Info(title="online-shop-295-api", version="1") 
+ * @OA\Info(title="online-shop-295", version="1.0") 
  */
 
 /**
  * @OA\Post(
  *     path="/authenticate",
- *     summary="Authenticate an unauthenticatet user.",
- *     tags={"product"},
-     *     requestBody=@OA\RequestBody(
-     *         request="/authenticate",
-     *         required=true,
-     *         description="ID of the member to fetch.",
-     *         @OA\MediaType(
-     *             mediaType="application/json",
-     *             @OA\Schema(
-     *                 @OA\Property(property="username", type="string", example="php-user"),
-     *                 @OA\Property(property="password", type="string", example="Admin123")
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(response="200", description="The request was successfully processed."))
-     * )
-*/
-
+ *     summary="Authenticate an unauthenticated user.",
+ *     tags={"general"},
+ *     requestBody=@OA\RequestBody(
+ *         request="/authenticate",
+ *         required=true,
+ *         description="ID of the member to fetch.",
+ *         @OA\MediaType(
+ *             mediaType="application/json",
+ *             @OA\Schema(
+ *                 @OA\Property(property="username", type="string", example="php-user"),
+ *                 @OA\Property(property="password", type="string", example="Admin123")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(response="200", description="The request was successfully processed."),
+ *     @OA\Response(response="401", description="Authentication failed.")
+ * )
+ */
 
 $app->post("/authenticate", function (Request $request, Response $response, $args) {
     global $secret;
@@ -54,7 +54,7 @@ $app->post("/authenticate", function (Request $request, Response $response, $arg
         $response->getBody()->write(json_encode(array(
             "error" => "Invalid credentials."
         )));
-        return $response->withStatus(401);
+        return $response->withStatus(401); //Authentication failed.
     }
 
     $userId = 1;
@@ -65,96 +65,263 @@ $app->post("/authenticate", function (Request $request, Response $response, $arg
 
     setcookie("token", $token);
 
-    return $response;
+    return $response->withStatus(200); //The request was successfully processed.
 });
 
 /**
-     * @OA\Post(
-     *     path="/product",
-     *     summary="Create a new product.",
-     *     tags={"product"},
-     *     requestBody=@OA\RequestBody(
-     *         request="/product",
-     *         required=true,
-     *         description="Beschreiben was im Request Body enthalten sein muss",
-     *         @OA\MediaType(
-     *             mediaType="application/json",
-     *             @OA\Schema(
-     *                 @OA\Property(property="sku", type="string", example="SP1001"),
-     *                 @OA\Property(property="active", type="integer", example="1"),
-     *                 @OA\Property(property="id_category", type="integer", example="3"),
-     *                 @OA\Property(property="name", type="string", example="tennis racket"),
-     *                 @OA\Property(property="image", type="string", example=""),
-     *                 @OA\Property(property="description", type="string", example="A tennis racket for adults"),
-     *                 @OA\Property(property="price", type="decimal", example="99,00"),
-     *                 @OA\Property(property="stock", type="integer", example="13")
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(response="200", description="Erklärung der Antwort mit Status 200"))
-     * )
-*/
+ * @OA\Post(
+ *     path="/product",
+ *     summary="Create a new product.",
+ *     tags={"product"},
+ *     requestBody=@OA\RequestBody(
+ *         request="/product",
+ *         required=true,
+ *         description="The request body must contain a JSON object with the following fields: 
+ *                      sku, active, id_category, name, image, description, price, and stock. 
+ *                      These fields define the properties of the product to be created.",
+ *         @OA\MediaType(
+ *             mediaType="application/json",
+ *             @OA\Schema(
+ *                 @OA\Property(property="sku", type="string", example="SP1001"),
+ *                 @OA\Property(property="active", type="integer", example="1"),
+ *                 @OA\Property(property="id_category", type="integer", example="3"),
+ *                 @OA\Property(property="name", type="string", example="tennis racket"),
+ *                 @OA\Property(property="image", type="string", example=""),
+ *                 @OA\Property(property="description", type="string", example="A tennis racket for adults"),
+ *                 @OA\Property(property="price", type="decimal", example="99,00"),
+ *                 @OA\Property(property="stock", type="integer", example="13")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(response="201", description="The request was successfully processed and a new product record has been created."),
+ *     @OA\Response(response="500", description="Error while creating.")
+ * )
+ */
 
 $app->post("/product", function (Request $request, Response $response, $args) {
     global $connection;
     global $secret;
 
     $data = $request->getParsedBody();
+    
+    $statement = $connection->prepare("INSERT INTO product (sku, active, id_category, name, image, description, price, stock) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+    $result = $statement->execute(array(
+        $data["sku"], 
+        $data["active"], 
+        $data["id_category"], 
+        $data["name"], 
+        $data["image"], 
+        $data["description"], 
+        $data["price"], 
+        $data["stock"]
+    ));
 
-    //if ($data["user"]);
+    if (!$result) {
+        return $response->withStatus(500); //Error while creating.
+    }
+    return $response->withStatus(201); //The request was successfully processed and a new product record has been created.
+});
 
-    //insert into db (online-shop-295)
-    //mysqli_query($connection, "INSERT INTO product(sku, active, id_category, name, image, description, price, stock) VALUES('" . $data["sku"] . "', '" . $data["active"] . "', '" . $data["id_category"] . "', '" . $data["name"] . "', '" . $data["image"] . "', '" . $data["description"] . "', '" . $data["price"] . "', '" . $data["stock"] . "')");
-    $statement = $connection->prepare("INSERT INTO product(sku, active, id_category, name, image, description, price, stock) VALUES(?, ?, ?, ?, ?, ?, ?, ?)");
-    $statement->execute(array($data["sku"], $data["active"], $data["id_category"], $data["name"], $data["image"], $data["description"], $data["price"], $data["stock"]));
+/**
+ * @OA\Get(
+ *     path="/product",
+ *     summary="Fetch information about all products from table products.",
+ *     tags={"product"},
+ *     @OA\Parameter(
+ *         name="product",
+ *         in="path", 
+ *         required=true,
+ *         description="The request body must contain a JSON object with the following fields: 
+ *                      sku, active, id_category, name, image, description, price, and stock. 
+ *                      These fields define the properties of the product to be created.",
+ *         @OA\Schema(
+ *             @OA\Property(property="sku", type="string", example="SP1001"),
+ *             @OA\Property(property="active", type="integer", example="1"),
+ *             @OA\Property(property="id_category", type="integer", example="3"),
+ *             @OA\Property(property="name", type="string", example="tennis racket"),
+ *             @OA\Property(property="image", type="string", example=""),
+ *             @OA\Property(property="description", type="string", example="A tennis racket for adults"),
+ *             @OA\Property(property="price", type="decimal", example="99,00"),
+ *             @OA\Property(property="stock", type="integer", example="13")
+ *         )
+ *     ),  
+ *     @OA\Response(response="200", description="Return product info."),
+ *     @OA\Response(response="404", description="Product info not found."),
+ *     @OA\Response(response="500", description="Request failed.")
+ * )
+ */
 
-    return $response->withStatus(201);
+$app->get("/product", function (Request $request, Response $response) {
+    global $connection;
+    global $secret;
+
+    //Fetch all products.
+    $statement = $connection->prepare("SELECT * FROM product");
+    $result = $statement->execute();
+
+    if (!$result) {
+        return $response->withStatus(500); //Request failed.
+    }
+
+    $result = $statement->get_result();
+    $products = $result->fetch_all(MYSQLI_ASSOC);
+
+    if (empty($products)) {
+        return $response->withStatus(404); //Product info not found.
+    }
+
+    $response->getBody()->write(json_encode($products));
+    return $response->withStatus(200); //Return product info.
 });
 
 
 /**
-     * @OA\Get(
-     *     path="/product/{id}",
-     *     summary="Fetch information about a product with a given ID.",
-     *     tags={"product"},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path", 
-     *         required=true,
-     *         description="ID from a objekt in product",
-     *         @OA\Schema(
-     *             type="integer",
-     *             example="1"
-     *         )
-     *     ),
-     *    
-     *     @OA\Response(response="200", description="Return product info")), //alle responses angeben, die dieser Endpoint zurückgeben kann
-     *     @OA\Response(response="404", description="Product info not found")) //etc
+ * @OA\Get(
+ *     path="/product/{product_id}",
+ *     summary="Fetch information about a single product with a given ID.",
+ *     tags={"product"},
+ *     @OA\Parameter(
+ *         name="product_id",
+ *         in="path", 
+ *         required=true,
+ *         description="ID from an objekt in product.",
+ *         @OA\Schema(
+ *             type="integer",
+ *             example="1"
+ *         )
+ *     ),  
+ *     @OA\Response(response="200", description="Return product info."),
+ *     @OA\Response(response="404", description="Product info not found."),
+ *     @OA\Response(response="500", description="Request failed.")
+ * )
  */
 
- $app->get("/product/{id}", function (Request $request, Response $response, $args) {
+$app->get("/product/{product_id}", function (Request $request, Response $response, $args) {
     global $connection;
     global $secret;
 
-    //Read from DB
-    $result = mysqli_query($connection, "SELECT * from product WHERE id = " . $args["id"]);
-    if ($result === false) {
-        return $response->withStatus(500);
+    $product_id = $args["product_id"];
+
+    //Fetch a single product.
+    $statement = $connection->prepare("SELECT * FROM product WHERE product_id = ?");
+    $result = $statement->execute(array($product_id));
+
+    if (!$result) {
+        return $response->withStatus(500); //Request failed.
     }
-    else if ($result === true) {
-        //not in case of SELECT!
+
+    $result = $statement->get_result();
+    $product = $result->fetch_assoc();
+
+    if (empty($product)) {
+        return $response->withStatus(404); //Product info not found.
     }
-    else {
-        $row_count = mysqli_num_rows($result);
 
-        if ($row_count == 0) {
-            return $response->withStatus(404);
-        }
+    $response->getBody()->write(json_encode($product));
+    return $response->withStatus(200); //Return product info.
+});
 
-        $onlineShop295 = mysqli_fetch_assoc($result);
+/**
+ * @OA\Patch(
+ *     path="/product{product_id}",
+ *     summary="",
+ *     tags={"product"},
+ *     @OA\Parameter(
+ *         name="product",
+ *         in="path",
+ *         required=true,
+ *         description="ID from a objekt in product.",
+ *         @OA\Schema(
+ *             type="integer",
+ *             example="1"
+ *         )
+ *     ),
+ *     requestBody=@OA\RequestBody(
+ *         request="/product_id",
+ *         required=true,
+ *         description="The request body must contain a JSON object with the following fields:
+ *                      sku, active, id_category, name, image, description, price, and stock. 
+ *                      These fields define the properties of the product to be created.",
+ *         @OA\MediaType(
+ *             mediaType="application/json",
+ *             @OA\Schema(
+ *                 @OA\Property(property="sku", type="string", example="SP1001"),
+ *                 @OA\Property(property="active", type="integer", example="1"),
+ *                 @OA\Property(property="id_category", type="integer", example="3"),
+ *                 @OA\Property(property="name", type="string", example="tennis racket"),
+ *                 @OA\Property(property="image", type="string", example=""),
+ *                 @OA\Property(property="description", type="string", example="A tennis racket for adults"),
+ *                 @OA\Property(property="price", type="decimal", example="99,00"),
+ *                 @OA\Property(property="stock", type="integer", example="13")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(response="200", description="Successfully updated.")
+ *     @OA\Response(response="500", description="Error while updating.")
+ * )
+ */
 
-        $response->getBody()->write(json_encode($onlineShop295));
-        return $response;
+$app->patch("/product/{product_id}", function (Request $request, Response $response, $args) {
+    global $connection;
+    global $secret;
+
+    $product_id = $args["product_id"];
+    $data = $request->getParsedBody();
+
+    $statement = $connection->prepare("UPDATE product SET sku = ?, active = ?, id_category = ?, name = ?, image = ?, description = ?, price = ?, stock = ? WHERE product_id = ?");
+    $result = $statement->execute(array(
+        $data["sku"], 
+        $data["active"], 
+        $data["id_category"], 
+        $data["name"], 
+        $data["image"], 
+        $data["description"], 
+        $data["price"], 
+        $data["stock"], 
+        $product_id
+    ));
+
+    if ($result) {
+        return $response->withStatus(200); //Successfully updated.
+    } else {
+        return $response->withStatus(500); //Error while updating.
+    }
+});
+
+/**
+ * @OA\Delete(
+ *     path="/product/{product_id}",
+ *     summary="Delete a product with a given ID.",
+ *     tags={"product"},
+ *     @OA\Parameter(
+ *         name="product",
+ *         in="path",
+ *         required=true,
+ *         description="ID from a objekt in product.",
+ *         @OA\Schema(
+ *             type="integer",
+ *             example="1"
+ *         )
+ *     ),
+ *     @OA\Response(response="200", description="Successfully deleted."),
+ *     @OA\Response(response="500", description="Error while deleting.")
+ * )
+*/
+
+
+$app->delete("/product/{product_id}", function (Request $request, Response $response, $args) {
+    global $connection;
+    global $secret;
+
+    $product_id = $args["product_id"];
+
+    $statement = $connection->prepare("DELETE FROM product WHERE product_id = ?");
+    $result = $statement->execute(array($product_id));
+
+    if ($result) {
+        return $response->withStatus(200); //Successfully deleted.
+    } else {
+        return $response->withStatus(500); //Error while deleting.
     }
 });
 

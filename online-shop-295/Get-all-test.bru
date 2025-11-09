@@ -1,16 +1,15 @@
 meta {
-  name: Get-test
+  name: Get-all-test
   type: http
   seq: 1
 }
 
 get {
-  url: localhost/product/1
+  url: localhost/product
   body: none
   auth: inherit
 }
 
 settings {
   encodeUrl: true
-  timeout: 0
 }

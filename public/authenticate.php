@@ -1,5 +1,5 @@
  <?php
-     function requrie_authenticate() {
+     function require_authenticate() {
         if (!isset($_COOKIE["token"]) || !Token::validate($_COOKIE["token"], $secret )) {
             return false;
     }

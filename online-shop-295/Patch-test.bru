@@ -5,11 +5,25 @@ meta {
 }
 
 patch {
-  url: localhost/
-  body: none
+  url: localhost/product/4
+  body: json
   auth: inherit
+}
+
+body:json {
+  {
+    "sku": "E1033",
+    "active": "1",
+    "id_category": "2",
+    "name": "family toaster",
+    "image": "",
+    "description": "big toaster",
+    "price": "299.90",
+    "stock": "2"
+  }
 }
 
 settings {
   encodeUrl: true
+  timeout: 0
 }

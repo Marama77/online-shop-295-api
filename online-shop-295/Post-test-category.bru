@@ -1,0 +1,23 @@
+meta {
+  name: Post-test-category
+  type: http
+  seq: 1
+}
+
+post {
+  url: localhost/category
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "active": "1",
+    "name": "papeterie articles"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

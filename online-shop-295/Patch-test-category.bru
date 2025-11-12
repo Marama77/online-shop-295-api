@@ -1,0 +1,23 @@
+meta {
+  name: Patch-test-category
+  type: http
+  seq: 8
+}
+
+patch {
+  url: localhost/category/5
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "active": "1",
+    "name": "bath toys"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

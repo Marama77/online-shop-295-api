@@ -9,10 +9,6 @@ require __DIR__ . "/../vendor/autoload.php";
 
 require_once "db.php";
 
-require "product.php";
-
-require "category.php";
-
 $secret = 'sec!ReT423*&';
 
 $app = AppFactory::create();
@@ -22,6 +18,10 @@ $app->addBodyParsingMiddleware();
 $app->addRoutingMiddleware();
 
 $app->addErrorMiddleware(true, true, true);
+
+/**
+ * @OA\Info(title="online-shop-295", version="1.0") 
+ */
 
 /**
  * @OA\Post(
@@ -57,15 +57,21 @@ $app->addErrorMiddleware(true, true, true);
         return $response->withStatus(401); //Authentication failed.
     }
 
-    $userId = 1;
+    $user_Id = 1;
     $expiration = time() + 3600;
     $issuer = 'localhost';
 
-    $token = Token::create($userId, $secret, $expiration, $issuer);
+    $token = Token::create($user_Id, $secret, $expiration, $issuer);
 
     setcookie("token", $token);
 
     return $response->withStatus(200); //The request was successfully processed.
 });
+
+require "category.php";
+
+require "product.php";
+
+$app->run();
 
 ?>

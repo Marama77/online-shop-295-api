@@ -1,7 +1,25 @@
 <?php
-/**
- * @OA\Info(title="online-shop-295", version="1.0") 
- */
+
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use Slim\Factory\AppFactory;
+use ReallySimpleJWT\Token;
+
+require __DIR__ . "/../vendor/autoload.php";
+
+require_once "db.php";
+
+$secret = 'sec!ReT423*&';
+
+
+
+$app->addBodyParsingMiddleware();
+
+$app->addRoutingMiddleware();
+
+$app->addErrorMiddleware(true, true, true);
+
+
 
 /**
  * @OA\Post(
@@ -60,7 +78,7 @@ $app->post("/product", function (Request $request, Response $response, $args) {
 /**
  * @OA\Get(
  *     path="/product",
- *     summary="Fetch information about all products from table products.",
+ *     summary="Fetch information about all products from table product.",
  *     tags={"product"},
  *     @OA\Parameter(
  *         name="product",
@@ -101,11 +119,11 @@ $app->get("/product", function (Request $request, Response $response) {
     $result = $statement->get_result();
     $products = $result->fetch_all(MYSQLI_ASSOC);
 
-    if (empty($products)) {
+    if (empty($product)) {
         return $response->withStatus(404); //Product info not found.
     }
 
-    $response->getBody()->write(json_encode($products));
+    $response->getBody()->write(json_encode($product));
     return $response->withStatus(200); //Return product info.
 });
 
@@ -260,6 +278,4 @@ $app->delete("/product/{product_id}", function (Request $request, Response $resp
     }
 });
 
-
-$app->run();
 ?>

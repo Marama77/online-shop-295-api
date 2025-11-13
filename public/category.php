@@ -51,6 +51,7 @@ $app->post("/category", function (Request $request, Response $response, $args) {
 
     $data = $request->getParsedBody();
     
+    //Prepares an SQL statement to insert a new category and executes it with the provided data.
     $statement = $connection->prepare("INSERT INTO category (active, name) VALUES (?, ?)");
     $result = $statement->execute(array(
         $data["active"], 
@@ -136,7 +137,7 @@ $app->post("/category", function (Request $request, Response $response, $args) {
 
     $category_id = $args["category_id"];
 
-    //Fetch a single product.
+    //Fetch a single category.
     $statement = $connection->prepare("SELECT * FROM category WHERE category_id = ?");
     $result = $statement->execute(array($category_id));
 
@@ -195,7 +196,8 @@ $app->post("/category", function (Request $request, Response $response, $args) {
 
     $category_id = $args["category_id"];
     $data = $request->getParsedBody();
-
+    
+    //Updates the category information in the database based on the provided data.
     $statement = $connection->prepare("UPDATE category SET active = ?, name = ? WHERE category_id = ?");
     $result = $statement->execute(array( 
         $data["active"],  
@@ -236,7 +238,8 @@ $app->delete("/category/{category_id}", function (Request $request, Response $re
     global $secret;
 
     $category_id = $args["category_id"];
-
+    
+    //Deletes a category from the database based on its ID.
     $statement = $connection->prepare("DELETE FROM category WHERE category_id = ?");
     $result = $statement->execute(array($category_id));
 

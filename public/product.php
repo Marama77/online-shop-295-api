@@ -39,7 +39,7 @@ $app->addErrorMiddleware(true, true, true);
  *                 @OA\Property(property="active", type="integer", example="1"),
  *                 @OA\Property(property="id_category", type="integer", example="3"),
  *                 @OA\Property(property="name", type="string", example="tennis racket"),
- *                 @OA\Property(property="image", type="string", example=""),
+ *                 @OA\Property(property="image", type="string", example="https://example.com/img.png"),
  *                 @OA\Property(property="description", type="string", example="A tennis racket for adults"),
  *                 @OA\Property(property="price", type="decimal", example="99,00"),
  *                 @OA\Property(property="stock", type="integer", example="13")
@@ -56,7 +56,8 @@ $app->post("/product", function (Request $request, Response $response, $args) {
     global $secret;
 
     $data = $request->getParsedBody();
-    
+
+    //Prepares an SQL statement to insert a new product and executes it with the provided data.
     $statement = $connection->prepare("INSERT INTO product (sku, active, id_category, name, image, description, price, stock) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
     $result = $statement->execute(array(
         $data["sku"], 
@@ -70,9 +71,11 @@ $app->post("/product", function (Request $request, Response $response, $args) {
     ));
 
     if (!$result) {
-        return $response->withStatus(500); //Error while creating.
+        //Error while creating.
+        return $response->withStatus(500); 
     }
-    return $response->withStatus(201); //The request was successfully processed and a new product record has been created.
+    //The request was successfully processed and a new product record has been created.
+    return $response->withStatus(201); 
 });
 
 /**
@@ -92,7 +95,7 @@ $app->post("/product", function (Request $request, Response $response, $args) {
  *             @OA\Property(property="active", type="integer", example="1"),
  *             @OA\Property(property="id_category", type="integer", example="3"),
  *             @OA\Property(property="name", type="string", example="tennis racket"),
- *             @OA\Property(property="image", type="string", example=""),
+ *             @OA\Property(property="image", type="string", example="https://example.com/img.png"),
  *             @OA\Property(property="description", type="string", example="A tennis racket for adults"),
  *             @OA\Property(property="price", type="decimal", example="99,00"),
  *             @OA\Property(property="stock", type="integer", example="13")
@@ -202,7 +205,7 @@ $app->get("/product/{product_id}", function (Request $request, Response $respons
  *                 @OA\Property(property="active", type="integer", example="1"),
  *                 @OA\Property(property="id_category", type="integer", example="3"),
  *                 @OA\Property(property="name", type="string", example="tennis racket"),
- *                 @OA\Property(property="image", type="string", example=""),
+ *                 @OA\Property(property="image", type="string", example="https://example.com/img.png"),
  *                 @OA\Property(property="description", type="string", example="A tennis racket for adults"),
  *                 @OA\Property(property="price", type="decimal", example="99,00"),
  *                 @OA\Property(property="stock", type="integer", example="13")
@@ -217,10 +220,11 @@ $app->get("/product/{product_id}", function (Request $request, Response $respons
 $app->patch("/product/{product_id}", function (Request $request, Response $response, $args) {
     global $connection;
     global $secret;
-
+    
     $product_id = $args["product_id"];
     $data = $request->getParsedBody();
-
+    
+    //Updates the product information in the database based on the provided data.
     $statement = $connection->prepare("UPDATE product SET sku = ?, active = ?, id_category = ?, name = ?, image = ?, description = ?, price = ?, stock = ? WHERE product_id = ?");
     $result = $statement->execute(array(
         $data["sku"], 
@@ -267,7 +271,8 @@ $app->delete("/product/{product_id}", function (Request $request, Response $resp
     global $secret;
 
     $product_id = $args["product_id"];
-
+    
+    //Deletes a product from the database based on its ID.
     $statement = $connection->prepare("DELETE FROM product WHERE product_id = ?");
     $result = $statement->execute(array($product_id));
 

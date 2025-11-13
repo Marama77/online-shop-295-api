@@ -50,13 +50,15 @@ $app->addErrorMiddleware(true, true, true);
 
     $data = $request->getParsedBody();
 
+    //Make sure client is authenticated.
     if ($data["username"] != "php-user" || $data["password"] != "Admin123Admin12") {
         $response->getBody()->write(json_encode(array(
             "error" => "Invalid credentials."
         )));
         return $response->withStatus(401); //Authentication failed.
     }
-
+    
+    //Initializes basic token data: user ID, expiration time, and issuer.
     $user_Id = 1;
     $expiration = time() + 3600;
     $issuer = 'localhost';
@@ -64,8 +66,9 @@ $app->addErrorMiddleware(true, true, true);
     $token = Token::create($user_Id, $secret, $expiration, $issuer);
 
     setcookie("token", $token);
-
-    return $response->withStatus(200); //The request was successfully processed.
+    
+    //The request was successfully processed.
+    return $response->withStatus(200); 
 });
 
 require "category.php";
